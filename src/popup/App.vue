@@ -3,11 +3,15 @@
     <button @click="jumpTab">
       Change Tab
     </button>
+    <button @click="selectTab">
+      Select Current Tab
+    </button>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import { MessageType } from "@/types";
 
 export default Vue.extend({
   name: "App",
@@ -18,12 +22,15 @@ export default Vue.extend({
       browser.tabs.update(id, { active: true });
       this.$store.state.counter++;
     },
+    selectTab(): void {
+      browser.runtime.sendMessage({ type: MessageType.POPUP_CUR_TAB });
+    },
   },
   destroyed() {
     this.$store.state.counter = 0;
   },
   mounted() {
-    browser.runtime.sendMessage({ type: "popup" });
+    browser.runtime.sendMessage({ type: MessageType.POPUP });
   },
 });
 </script>
