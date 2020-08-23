@@ -9,13 +9,13 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "HelloWorld",
-  mounted() {
-    browser.runtime.sendMessage({});
-  },
   computed: {
     defaultText() {
       return browser.i18n.getMessage("extName");
     },
+  },
+  mounted() {
+    browser.runtime.sendMessage({});
   },
 });
 </script>

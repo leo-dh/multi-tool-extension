@@ -6,31 +6,70 @@
     <button @click="selectTab">
       Select Current Tab
     </button>
+    <button @click="resetSelectedTabs">
+      Reset Tabs
+    </button>
+    <div class="selectedTab">
+      <span>Selected Tab</span>
+      <div>
+        <img :src="selectedTab.favIconUrl || ''" alt="" />
+        <div>
+          {{ selectedTab.title || "..." }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import { MessageType } from "@/types";
+import { MessageType, PopupMode } from "@/types";
 
 export default Vue.extend({
   name: "App",
-  methods: {
-    jumpTab(): void {
-      const { id, windowId } = this.$store.getters.getTabInfo;
-      browser.windows.update(windowId, { focused: true });
-      browser.tabs.update(id, { active: true });
-      this.$store.state.counter++;
+  computed: {
+    selectedTab() {
+      const selectedTab = this.$store.getters.getSelectedTab;
+      return selectedTab ? selectedTab : {};
     },
-    selectTab(): void {
-      browser.runtime.sendMessage({ type: MessageType.POPUP_CUR_TAB });
+    mode() {
+      return this.$store.getters.getPopupMode;
     },
-  },
-  destroyed() {
-    this.$store.state.counter = 0;
   },
   mounted() {
     browser.runtime.sendMessage({ type: MessageType.POPUP });
+    this.mode = this.$store.getters.getPopupMode;
+  },
+  methods: {
+    jumpTab(): void {
+      switch (this.mode) {
+        case PopupMode.MULTIPLE_TABS: {
+          const { id, windowId } = this.$store.getters.getListedTab;
+          browser.windows.update(windowId as number, { focused: true });
+          browser.tabs.update(id as number, { active: true });
+          this.$store.commit("incrementCounter");
+          break;
+        }
+
+        case PopupMode.SELECTED_TAB: {
+          const { id, windowId } = this.$store.getters.getSelectedTab;
+          browser.windows.update(windowId as number, { focused: true });
+          browser.tabs.update(id as number, { active: true });
+          break;
+        }
+      }
+    },
+    selectTab(): void {
+      browser.runtime.sendMessage({ type: MessageType.POPUP_CUR_TAB });
+      this.$store.commit("setPopupMode", PopupMode.SELECTED_TAB);
+      this.mode = PopupMode.SELECTED_TAB;
+      this.selectedTab = this.$store.getters.getSelectedTab;
+    },
+    resetSelectedTabs(): void {
+      browser.runtime.sendMessage({ type: MessageType.POPUP });
+      this.$store.commit("setPopupMode", PopupMode.MULTIPLE_TABS);
+      this.mode = PopupMode.MULTIPLE_TABS;
+    },
   },
 });
 </script>
@@ -38,6 +77,9 @@ export default Vue.extend({
 <style>
 .container {
   display: flex;
+  flex-direction: column;
   padding: 1em;
+}
+.selectedTab {
 }
 </style>

@@ -5,7 +5,7 @@ module.exports = {
     webextensions: true,
   },
   extends: [
-    "plugin:vue/essential",
+    "plugin:vue/recommended",
     "eslint:recommended",
     "@vue/typescript/recommended",
     "@vue/prettier",

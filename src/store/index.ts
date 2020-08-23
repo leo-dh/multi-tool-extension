@@ -1,27 +1,35 @@
 import Vue from "vue";
 import Vuex, { GetterTree, MutationTree } from "vuex";
 import VuexWebExtensions from "vuex-webextensions";
+import { TabInfo, PopupMode } from "../types";
 
 Vue.use(Vuex);
 
-interface TabInfo {
-  id: number;
-  windowId: number;
-}
 interface State {
-  listedTabs: TabInfo[];
   counter: number;
-  test: any;
+  popupMode: PopupMode;
+  listedTabs: TabInfo[];
+  selectedTab: TabInfo | null;
 }
 const state: State = {
   listedTabs: [] as TabInfo[],
   counter: 0,
-  test: "",
+  selectedTab: null,
+  popupMode: PopupMode.MULTIPLE_TABS,
 };
 
 const getters: GetterTree<State, any> = {
-  getTabInfo: state => {
-    return state.listedTabs[state.counter % state.listedTabs.length];
+  getListedTab: state => {
+    return state.listedTabs[state.counter];
+  },
+  getListedTabs: state => {
+    return state.listedTabs;
+  },
+  getSelectedTab: state => {
+    return state.selectedTab;
+  },
+  getPopupMode: state => {
+    return state.popupMode;
   },
 };
 
@@ -34,6 +42,19 @@ const mutations: MutationTree<State> = {
       }
     }
     state.listedTabs.push(tabInfo);
+  },
+  clearListedTabs: (state): void => {
+    state.listedTabs = [] as TabInfo[];
+  },
+  setSelectedTab: (state, tabInfo: TabInfo): void => {
+    state.selectedTab = tabInfo;
+  },
+  setPopupMode: (state, popupMode: PopupMode): void => {
+    state.popupMode = popupMode;
+  },
+  incrementCounter: (state): void => {
+    state.counter++;
+    state.counter %= state.listedTabs.length;
   },
 };
 
