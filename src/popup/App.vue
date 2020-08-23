@@ -10,12 +10,12 @@
       Reset Tabs
     </button>
     <div class="selectedTab">
-      <span>Selected Tab</span>
-      <div>
-        <img :src="selectedTab.favIconUrl || ''" alt="" />
-        <div>
+      <span class="selectedTab__title">Selected Tab</span>
+      <div class="selectedTab__details">
+        <img :src="selectedTab.favIconUrl || ''" alt="" class="selectedTab__details__icon" />
+        <span class="selectedTab__details__text">
           {{ selectedTab.title || "..." }}
-        </div>
+        </span>
       </div>
     </div>
   </div>
@@ -38,7 +38,6 @@ export default Vue.extend({
   },
   mounted() {
     browser.runtime.sendMessage({ type: MessageType.POPUP });
-    this.mode = this.$store.getters.getPopupMode;
   },
   methods: {
     jumpTab(): void {
@@ -62,13 +61,11 @@ export default Vue.extend({
     selectTab(): void {
       browser.runtime.sendMessage({ type: MessageType.POPUP_CUR_TAB });
       this.$store.commit("setPopupMode", PopupMode.SELECTED_TAB);
-      this.mode = PopupMode.SELECTED_TAB;
       this.selectedTab = this.$store.getters.getSelectedTab;
     },
     resetSelectedTabs(): void {
       browser.runtime.sendMessage({ type: MessageType.POPUP });
       this.$store.commit("setPopupMode", PopupMode.MULTIPLE_TABS);
-      this.mode = PopupMode.MULTIPLE_TABS;
     },
   },
 });
@@ -81,5 +78,14 @@ export default Vue.extend({
   padding: 1em;
 }
 .selectedTab {
+}
+.selectedTab__details {
+  display: flex;
+  align-items: center;
+}
+.selectedTab__details__icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
 }
 </style>
