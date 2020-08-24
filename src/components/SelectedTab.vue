@@ -25,10 +25,12 @@ export default Vue.extend({
 <style scoped>
 .selectedTab {
   color: whitesmoke;
+  border-radius: 4px;
+  padding: 8px 16px;
 }
 .selectedTab__title {
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 0.8rem;
 }
 .selectedTab__details {
   display: flex;
@@ -42,6 +44,6 @@ export default Vue.extend({
 }
 .selectedTab__details__text {
   max-width: 20ch;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 </style>

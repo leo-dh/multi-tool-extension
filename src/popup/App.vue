@@ -30,6 +30,8 @@ export default Vue.extend({
   },
   mounted() {
     browser.runtime.sendMessage({ type: MessageType.POPUP });
+    const body = document.querySelector("body");
+    if (body) body.style.background = "#31313a";
   },
   methods: {
     changeTab(): void {
@@ -68,7 +70,6 @@ html {
   box-sizing: border-box;
   font-size: 16px;
   font-family: sans-serif;
-  background: #31313a;
 }
 
 *,
