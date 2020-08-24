@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <button @click="jumpTab">
+    <button @click="changeTab">
       Change Tab
     </button>
     <button @click="selectTab">
@@ -9,29 +9,21 @@
     <button @click="resetSelectedTabs">
       Reset Tabs
     </button>
-    <div class="selectedTab">
-      <span class="selectedTab__title">Selected Tab</span>
-      <div class="selectedTab__details">
-        <img :src="selectedTab.favIconUrl || ''" alt="" class="selectedTab__details__icon" />
-        <span class="selectedTab__details__text">
-          {{ selectedTab.title || "..." }}
-        </span>
-      </div>
-    </div>
+    <selected-tab style="margin-top: 8px" />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import { MessageType, PopupMode } from "@/types";
+import SelectedTab from "@/components/SelectedTab.vue";
 
 export default Vue.extend({
   name: "App",
+  components: {
+    SelectedTab,
+  },
   computed: {
-    selectedTab() {
-      const selectedTab = this.$store.getters.getSelectedTab;
-      return selectedTab ? selectedTab : {};
-    },
     mode() {
       return this.$store.getters.getPopupMode;
     },
@@ -40,7 +32,7 @@ export default Vue.extend({
     browser.runtime.sendMessage({ type: MessageType.POPUP });
   },
   methods: {
-    jumpTab(): void {
+    changeTab(): void {
       switch (this.mode) {
         case PopupMode.MULTIPLE_TABS: {
           const { id, windowId } = this.$store.getters.getListedTab;
@@ -59,33 +51,55 @@ export default Vue.extend({
       }
     },
     selectTab(): void {
-      browser.runtime.sendMessage({ type: MessageType.POPUP_CUR_TAB });
       this.$store.commit("setPopupMode", PopupMode.SELECTED_TAB);
-      this.selectedTab = this.$store.getters.getSelectedTab;
+      browser.runtime.sendMessage({ type: MessageType.POPUP_CUR_TAB });
     },
     resetSelectedTabs(): void {
-      browser.runtime.sendMessage({ type: MessageType.POPUP });
       this.$store.commit("setPopupMode", PopupMode.MULTIPLE_TABS);
+      browser.runtime.sendMessage({ type: MessageType.POPUP });
     },
   },
 });
 </script>
 
 <style>
+/* CSS Reset */
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+  font-family: sans-serif;
+  background: #31313a;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
 .container {
   display: flex;
   flex-direction: column;
   padding: 1em;
-}
-.selectedTab {
-}
-.selectedTab__details {
-  display: flex;
-  align-items: center;
-}
-.selectedTab__details__icon {
-  width: 32px;
-  height: 32px;
-  margin-right: 12px;
 }
 </style>
