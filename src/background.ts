@@ -30,16 +30,6 @@ async function refreshSelectedTab(): Promise<void> {
 
 browser.runtime.onMessage.addListener(async (message: Message, sender, sendResponse) => {
   switch (message.type) {
-    case MessageType.INFO: {
-      // if (message.text?.includes("youtube")) {
-      //   const { id, windowId } = sender.tab!;
-      //   const tabInfo = { id: id as number, windowId: windowId as number };
-      //   store.commit("addTab", tabInfo);
-      //   console.log(store.state.listedTabs);
-      // }
-      break;
-    }
-
     case MessageType.POPUP: {
       if (store.state.popupMode === PopupMode.MULTIPLE_TABS) {
         await refreshListedTabs();
@@ -49,7 +39,7 @@ browser.runtime.onMessage.addListener(async (message: Message, sender, sendRespo
       break;
     }
 
-    case MessageType.POPUP_CUR_TAB: {
+    case MessageType.GET_CUR_TAB: {
       const [tab] = await browser.tabs.query({ active: true });
       const { id, windowId, favIconUrl, title } = tab;
       const tabInfo: TabInfo = {
@@ -59,6 +49,20 @@ browser.runtime.onMessage.addListener(async (message: Message, sender, sendRespo
         title: title!,
       };
       store.commit("setSelectedTab", tabInfo);
+      break;
+    }
+
+    case MessageType.JUMP_TAB: {
+      let tabInfo;
+      if (store.state.popupMode === PopupMode.MULTIPLE_TABS) {
+        tabInfo = store.state.listedTabs[store.state.counter];
+        store.commit("incrementCounter");
+      } else if (store.state.popupMode === PopupMode.SELECTED_TAB) {
+        tabInfo = store.state.selectedTab;
+      }
+      if (!tabInfo) return;
+      browser.windows.update(tabInfo.windowId, { focused: true });
+      browser.tabs.update(tabInfo.id, { active: true });
       break;
     }
   }

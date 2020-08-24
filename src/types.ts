@@ -1,7 +1,7 @@
 export enum MessageType {
-  INFO,
   POPUP,
-  POPUP_CUR_TAB,
+  GET_CUR_TAB,
+  JUMP_TAB,
 }
 
 export interface Message {

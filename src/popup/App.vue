@@ -54,7 +54,7 @@ export default Vue.extend({
     },
     selectTab(): void {
       this.$store.commit("setPopupMode", PopupMode.SELECTED_TAB);
-      browser.runtime.sendMessage({ type: MessageType.POPUP_CUR_TAB });
+      browser.runtime.sendMessage({ type: MessageType.GET_CUR_TAB });
     },
     resetSelectedTabs(): void {
       this.$store.commit("setPopupMode", PopupMode.MULTIPLE_TABS);
