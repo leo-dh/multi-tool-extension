@@ -6,21 +6,21 @@
       </button>
       <button @click="selectTab">Pin Current</button>
     </div>
-    <selected-tab style="margin-top: 8px" />
-    <tabs style="margin-top: 8px" :tabs="tabs" />
+    <pinned-tab />
+    <tabs :tabs="tabs" />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import { MessageType, TabInfo } from "@/types";
-import SelectedTab from "@/components/SelectedTab.vue";
+import PinnedTab from "@/components/PinnedTab.vue";
 import Tabs from "@/components/Tabs.vue";
 
 export default Vue.extend({
   name: "App",
   components: {
-    SelectedTab,
+    PinnedTab,
     Tabs,
   },
   data() {
@@ -89,9 +89,12 @@ ul {
   flex-direction: column;
   max-width: 350px;
 }
+.container > * {
+  margin-top: 8px;
+}
 .buttonRow {
   display: flex;
-  padding: 8px 16px;
+  padding: 0px 16px;
 }
 .buttonRow > * {
   flex: 1 1 0;

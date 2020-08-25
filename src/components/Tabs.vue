@@ -9,14 +9,26 @@
           type="text"
           class="tabs__search__inputContainer__input"
           placeholder="Search Tabs"
-          @keyup.enter="jumpToFirst"
+          @keyup.enter="jumpToSelected"
+          @keydown.alt.j="changeSelected(1)"
+          @keydown.alt.k="changeSelected(-1)"
+          @keydown.up="changeSelected(-1)"
+          @keydown.down="changeSelected(1)"
         />
       </div>
-      <div v-if="filteredTabs" class="tabs__search__results">
+      <div v-if="filteredTabs" ref="results" class="tabs__search__results">
         <template v-for="(tab, i) in filteredTabs">
-          <div :key="i" class="tabs__search__results__item" @click="jumpToTab(tab)">
+          <div
+            :key="i"
+            class="tabs__search__results__item"
+            :class="i == selected ? 'selected' : ''"
+            @click="jumpToTab(tab)"
+          >
             <img :src="tab.favIconUrl" alt="" class="tabs__search__results__item__icon" />
-            <span class="tabs__search__results__item__text">{{ tab.title }}</span>
+            <div class="tabs__search__results__item__text">
+              <span class="tabs__search__results__item__text__title">{{ tab.title }}</span>
+              <span class="tabs__search__results__item__text__url">{{ tab.url }}</span>
+            </div>
           </div>
         </template>
       </div>
@@ -38,6 +50,7 @@ export default Vue.extend({
   data() {
     return {
       search: "",
+      selected: 0,
     };
   },
   computed: {
@@ -56,10 +69,23 @@ export default Vue.extend({
       browser.tabs.update(id, { active: true });
       window.close();
     },
-    jumpToFirst() {
-      const selectedTab = this.filteredTabs[0];
+    jumpToSelected() {
+      const selectedTab = this.filteredTabs[this.selected];
       if (!selectedTab) return;
       this.jumpToTab(selectedTab);
+    },
+    changeSelected(amount: number) {
+      const max = this.filteredTabs.length - 1;
+      const min = 0;
+      const newVal = this.selected + amount;
+      if (!(newVal > max || newVal < min)) {
+        this.selected = newVal;
+      }
+      this.$nextTick(() => {
+        (this.$refs["results"] as HTMLElement)
+          .querySelector(".selected")
+          ?.scrollIntoView({ block: amount > 0 ? "end" : "start", behavior: "smooth" });
+      });
     },
   },
 });
@@ -94,22 +120,44 @@ export default Vue.extend({
 .tabs__search__results__item {
   display: flex;
   align-items: center;
-  margin: 24px 16px;
+  border-radius: 4px;
+  margin: 6px 6px;
+  padding: 12px 8px;
   cursor: pointer;
+  transition: all 0.3s ease-in-out;
 }
-.tabs__search__results__item:hover .tabs__search__results__item__text {
-  background: grey;
+.tabs__search__results__item:hover {
+  background: #4d4d5c;
+}
+.tabs__search__results__item.selected {
+  background: #4d4d5c;
 }
 .tabs__search__results__item__icon {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
 }
 .tabs__search__results__item__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin-left: 16px;
-  font-size: 0.9rem;
-  text-overflow: ellipsis;
   overflow: hidden;
+}
+.tabs__search__results__item__text__title {
+  font-size: 1rem;
+  font-weight: 600;
   white-space: nowrap;
-  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tabs__search__results__item__text__url {
+  margin-top: 4px;
+  font-size: 0.6rem;
+  color: #c4c4c4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
