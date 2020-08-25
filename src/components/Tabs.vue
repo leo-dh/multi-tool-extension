@@ -112,7 +112,7 @@ export default Vue.extend({
   padding: 8px 4px;
 }
 .tabs__search__results {
-  border-top: 1px solid gray;
+  /* border-top: 1px solid gray; */
   max-height: 300px;
   overflow-y: auto;
   margin-top: 16px;
