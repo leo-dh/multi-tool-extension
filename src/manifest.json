@@ -1,7 +1,6 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extName__",
-  "homepage_url": "http://localhost:8080/",
   "description": "A Vue Browser Extension",
   "default_locale": "en",
   "permissions": ["tabs", "<all_urls>", "*://*/*", "storage"],
@@ -31,5 +30,12 @@
       "matches": ["<all_urls>"],
       "js": ["js/content-script.js"]
     }
-  ]
+  ],
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Space"
+      }
+    }
+  }
 }

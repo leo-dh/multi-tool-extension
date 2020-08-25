@@ -1,15 +1,16 @@
 <template>
   <div class="container">
-    <button @click="changeTab">
-      Change Tab
-    </button>
-    <button @click="selectTab">
-      Select Current Tab
-    </button>
-    <button @click="resetSelectedTabs">
-      Reset Tabs
-    </button>
+    <div class="buttonRow">
+      <button @click="changeTab">
+        Change Tab
+      </button>
+      <button @click="selectTab">Pin Current</button>
+      <button @click="resetSelectedTabs">
+        Reset Tabs
+      </button>
+    </div>
     <selected-tab style="margin-top: 8px" />
+    <tabs />
   </div>
 </template>
 
@@ -17,11 +18,14 @@
 import Vue from "vue";
 import { MessageType, PopupMode } from "@/types";
 import SelectedTab from "@/components/SelectedTab.vue";
+import { MutationTypes } from "@/store/mutations";
+import Tabs from "@/components/Tabs.vue";
 
 export default Vue.extend({
   name: "App",
   components: {
     SelectedTab,
+    Tabs,
   },
   computed: {
     mode() {
@@ -40,7 +44,7 @@ export default Vue.extend({
           const { id, windowId } = this.$store.getters.getListedTab;
           browser.windows.update(windowId as number, { focused: true });
           browser.tabs.update(id as number, { active: true });
-          this.$store.commit("incrementCounter");
+          this.$store.commit(MutationTypes.INCREMENT_COUNTER);
           break;
         }
 
@@ -53,11 +57,11 @@ export default Vue.extend({
       }
     },
     selectTab(): void {
-      this.$store.commit("setPopupMode", PopupMode.SELECTED_TAB);
+      this.$store.commit(MutationTypes.SET_POPUP_MODE, PopupMode.SELECTED_TAB);
       browser.runtime.sendMessage({ type: MessageType.GET_CUR_TAB });
     },
     resetSelectedTabs(): void {
-      this.$store.commit("setPopupMode", PopupMode.MULTIPLE_TABS);
+      this.$store.commit(MutationTypes.SET_POPUP_MODE, PopupMode.MULTIPLE_TABS);
       browser.runtime.sendMessage({ type: MessageType.POPUP });
     },
   },
@@ -102,5 +106,12 @@ ul {
   display: flex;
   flex-direction: column;
   padding: 1em;
+  max-width: 350px;
+}
+.buttonRow {
+  display: flex;
+}
+.buttonRow > * {
+  flex: 1 1 0;
 }
 </style>

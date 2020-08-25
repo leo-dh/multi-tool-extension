@@ -43,7 +43,11 @@ export default Vue.extend({
   margin-right: 12px;
 }
 .selectedTab__details__text {
-  max-width: 20ch;
-  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: 0.8rem;
 }
 </style>
