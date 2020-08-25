@@ -10,14 +10,10 @@ export interface Message {
   text?: string;
 }
 
-export enum PopupMode {
-  MULTIPLE_TABS,
-  SELECTED_TAB,
-}
-
 export interface TabInfo {
   id: number;
   windowId: number;
   favIconUrl?: string;
   title?: string;
+  url?: string;
 }
