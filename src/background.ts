@@ -19,16 +19,20 @@ async function refreshSelectedTab(): Promise<void> {
   store.commit(MutationTypes.SET_SELECTED_TAB, tabInfo);
 }
 
+async function refreshTabs(): Promise<void> {
+  const tabs = (await browser.tabs.query({})).map(tab => {
+    const { id, windowId, favIconUrl, title, url } = tab;
+    return { id, windowId, favIconUrl, title, url };
+  });
+  store.commit(MutationTypes.SET_TABS, tabs);
+}
+
 browser.runtime.onMessage.addListener(async (message: Message, _sender) => {
   switch (message.type) {
     case MessageType.POPUP: {
-      await refreshSelectedTab();
-      return browser.tabs.query({}).then(result => {
-        return result.map(tab => {
-          const { id, windowId, favIconUrl, title, url } = tab;
-          return { id, windowId, favIconUrl, title, url };
-        });
-      });
+      refreshSelectedTab();
+      refreshTabs();
+      break;
     }
 
     case MessageType.GET_CUR_TAB: {

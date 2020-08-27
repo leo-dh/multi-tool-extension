@@ -5,4 +5,7 @@ export const getters: GetterTree<State, any> = {
   getSelectedTab: state => {
     return state.selectedTab;
   },
+  getTabs: state => {
+    return state.tabs;
+  },
 };

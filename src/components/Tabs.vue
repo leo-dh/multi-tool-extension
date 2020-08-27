@@ -49,12 +49,6 @@ import { TabInfo } from "@/types";
 import Fuse from "fuse.js";
 
 export default Vue.extend({
-  props: {
-    tabs: {
-      type: Array as () => Array<TabInfo>,
-      default: () => [] as TabInfo[],
-    },
-  },
   data() {
     return {
       search: "",
@@ -62,6 +56,9 @@ export default Vue.extend({
     };
   },
   computed: {
+    tabs(): TabInfo[] {
+      return this.$store.getters.getTabs;
+    },
     filteredTabs(): TabInfo[] {
       if (!this.search) return this.tabs;
       const fuse = new Fuse(this.tabs, {

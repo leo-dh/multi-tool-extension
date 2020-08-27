@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <pinned-tab />
-    <tabs :tabs="tabs" />
+    <tabs />
   </div>
 </template>
 
@@ -23,13 +23,15 @@ export default Vue.extend({
     };
   },
   created() {
-    browser.runtime.sendMessage({ type: MessageType.POPUP }).then(response => {
-      this.tabs = response;
-    });
+    browser.runtime.sendMessage({ type: MessageType.POPUP });
   },
   mounted() {
     const body = document.querySelector("body");
-    if (body) body.style.background = "#31313a";
+    if (body) {
+      body.style.background = "#31313a";
+      body.style.display = "flex";
+      body.style.justifyContent = "center";
+    }
   },
 });
 </script>
