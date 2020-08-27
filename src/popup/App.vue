@@ -1,11 +1,5 @@
 <template>
   <div class="container">
-    <div class="buttonRow">
-      <button @click="changeTab">
-        Change Tab
-      </button>
-      <button @click="selectTab">Pin Current</button>
-    </div>
     <pinned-tab />
     <tabs :tabs="tabs" />
   </div>
@@ -36,16 +30,6 @@ export default Vue.extend({
   mounted() {
     const body = document.querySelector("body");
     if (body) body.style.background = "#31313a";
-  },
-  methods: {
-    changeTab(): void {
-      const { id, windowId } = this.$store.getters.getSelectedTab;
-      browser.windows.update(windowId as number, { focused: true });
-      browser.tabs.update(id as number, { active: true });
-    },
-    selectTab(): void {
-      browser.runtime.sendMessage({ type: MessageType.GET_CUR_TAB });
-    },
   },
 });
 </script>

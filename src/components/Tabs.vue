@@ -3,6 +3,13 @@
     <span class="tabs__title">Tabs</span>
     <div class="tabs__search">
       <div class="tabs__search__inputContainer">
+        <svg class="tabs__search__inputContainer__icon" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fill-rule="evenodd"
+            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+            clip-rule="evenodd"
+          />
+        </svg>
         <input
           ref="searchInput"
           v-model="search"
@@ -116,10 +123,18 @@ export default Vue.extend({
 }
 .tabs__search__inputContainer {
   padding: 0 16px;
+  position: relative;
+}
+.tabs__search__inputContainer__icon {
+  width: 16px;
+  height: 16px;
+  color: gray;
+  margin: 8px 8px;
+  position: absolute;
 }
 .tabs__search__inputContainer__input {
   width: 100%;
-  padding: 8px 4px;
+  padding: 8px 4px 8px 24px;
 }
 .tabs__search__results {
   /* border-top: 1px solid gray; */
@@ -134,7 +149,7 @@ export default Vue.extend({
   margin: 6px 6px;
   padding: 12px 8px;
   cursor: pointer;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 .tabs__search__results__item:hover {
   background: #4d4d5c;
