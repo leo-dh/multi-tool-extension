@@ -39,6 +39,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { TabInfo } from "@/types";
+import Fuse from "fuse.js";
 
 export default Vue.extend({
   props: {
@@ -55,9 +56,18 @@ export default Vue.extend({
   },
   computed: {
     filteredTabs(): TabInfo[] {
-      return this.tabs.filter(
-        value => value.title?.includes(this.search) || value.url?.includes(this.search)
-      );
+      if (!this.search) return this.tabs;
+      const fuse = new Fuse(this.tabs, {
+        keys: [{ name: "title", weight: 1.5 }, "url"],
+        threshold: 0.5,
+      });
+      return fuse.search(this.search).map(result => result.item);
+    },
+  },
+  watch: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    search(newValue, oldValue) {
+      this.selected = 0;
     },
   },
   mounted() {
