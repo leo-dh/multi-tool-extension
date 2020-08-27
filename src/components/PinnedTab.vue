@@ -37,9 +37,10 @@ export default Vue.extend({
       browser.runtime.sendMessage({ type: MessageType.GET_CUR_TAB });
     },
     jumpToTab(): void {
-      const { id, windowId } = this.$store.getters.getSelectedTab;
+      const { id, windowId } = this.pinnedTab;
       browser.windows.update(windowId as number, { focused: true });
       browser.tabs.update(id as number, { active: true });
+      window.close();
     },
   },
 });
@@ -67,6 +68,7 @@ export default Vue.extend({
   border-radius: 4px;
   padding: 8px 8px;
   transition: all 0.2s ease-in-out;
+  width: 100%;
 }
 .pinnedTab__content__details:hover {
   background: #4d4d5c;

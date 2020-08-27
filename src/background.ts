@@ -3,28 +3,30 @@ import store from "@/store";
 import { Message, MessageType, TabInfo } from "@/types";
 import { MutationTypes } from "./store/mutations";
 
-async function refreshSelectedTab(): Promise<void> {
-  const selectedTab = store.getters.getSelectedTab;
+function refreshSelectedTab(): void {
+  const selectedTab: TabInfo = store.getters.getSelectedTab;
   if (!selectedTab) return;
   const { id } = selectedTab;
-  const tab = await browser.tabs.get(id);
-  const { windowId, favIconUrl, title, url } = tab;
-  const tabInfo: TabInfo = {
-    id: id!,
-    windowId: windowId!,
-    favIconUrl: favIconUrl!,
-    title: title!,
-    url: url!,
-  };
-  store.commit(MutationTypes.SET_SELECTED_TAB, tabInfo);
+  browser.tabs.get(id).then(tab => {
+    const { windowId, favIconUrl, title, url } = tab;
+    const tabInfo = { id, windowId, favIconUrl, title, url } as TabInfo;
+    store.commit(MutationTypes.SET_SELECTED_TAB, tabInfo);
+  });
 }
 
-async function refreshTabs(): Promise<void> {
-  const tabs = (await browser.tabs.query({})).map(tab => {
-    const { id, windowId, favIconUrl, title, url } = tab;
-    return { id, windowId, favIconUrl, title, url };
+function refreshTabs(): void {
+  browser.tabs.query({}).then((result: browser.tabs.Tab[]) => {
+    const tabs = result.map(tab => {
+      const { id, windowId, favIconUrl, title, url } = tab;
+      return { id, windowId, favIconUrl, title, url } as TabInfo;
+    });
+    store.commit(MutationTypes.SET_TABS, tabs);
   });
-  store.commit(MutationTypes.SET_TABS, tabs);
+}
+
+function focusTab(id: number, windowId: number): void {
+  browser.windows.update(windowId, { focused: true });
+  browser.tabs.update(id, { active: true });
 }
 
 browser.runtime.onMessage.addListener(async (message: Message, _sender) => {
@@ -38,22 +40,22 @@ browser.runtime.onMessage.addListener(async (message: Message, _sender) => {
     case MessageType.GET_CUR_TAB: {
       const [tab] = await browser.tabs.query({ active: true });
       const { id, windowId, favIconUrl, title, url } = tab;
-      const tabInfo: TabInfo = {
-        id: id!,
-        windowId: windowId!,
-        favIconUrl: favIconUrl!,
-        title: title!,
-        url: url!,
-      };
+      const tabInfo = { id, windowId, favIconUrl, title, url } as TabInfo;
       store.commit(MutationTypes.SET_SELECTED_TAB, tabInfo);
       break;
     }
 
     case MessageType.JUMP_TAB: {
-      const tabInfo = store.getters.getSelectedTab;
+      const tabInfo: TabInfo = store.getters.getSelectedTab;
       if (!tabInfo) return;
-      browser.windows.update(tabInfo.windowId, { focused: true });
-      browser.tabs.update(tabInfo.id, { active: true });
+      const [currentTab] = await browser.tabs.query({ active: true });
+      if (currentTab.id !== tabInfo.id) {
+        store.commit(MutationTypes.SET_PREVIOUS_TAB, currentTab);
+        focusTab(tabInfo.id, tabInfo.windowId);
+      } else {
+        const prevTab: TabInfo = store.getters.getPreviousTab;
+        focusTab(prevTab.id, prevTab.windowId);
+      }
       break;
     }
   }
