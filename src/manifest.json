@@ -39,6 +39,10 @@
     {
       "matches": ["<all_urls>"],
       "js": ["js/content-script.js"]
+    },
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["js/youtube-content-script.js"]
     }
   ],
   "commands": {

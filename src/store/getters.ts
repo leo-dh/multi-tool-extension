@@ -11,4 +11,7 @@ export const getters: GetterTree<State, any> = {
   getTabs: state => {
     return state.tabs;
   },
+  getPlayingTab: state => {
+    return state.playingTab;
+  },
 };

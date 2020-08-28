@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <now-playing />
     <pinned-tab />
     <tabs />
   </div>
@@ -7,8 +8,9 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { MessageType, TabInfo } from "@/types";
+import { MessageType } from "@/types";
 import PinnedTab from "@/components/PinnedTab.vue";
+import NowPlaying from "@/components/NowPlaying.vue";
 import Tabs from "@/components/Tabs.vue";
 
 export default Vue.extend({
@@ -16,11 +18,7 @@ export default Vue.extend({
   components: {
     PinnedTab,
     Tabs,
-  },
-  data() {
-    return {
-      tabs: [] as TabInfo[],
-    };
+    NowPlaying,
   },
   created() {
     browser.runtime.sendMessage({ type: MessageType.POPUP });

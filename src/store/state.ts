@@ -1,13 +1,15 @@
-import { TabInfo } from "@/types";
+import { Tab } from "@/types";
 
 export interface State {
-  selectedTab: TabInfo | null;
-  previousTab: TabInfo | null;
-  tabs: TabInfo[];
+  selectedTab: Tab | null;
+  previousTab: Tab | null;
+  playingTab: Tab | null;
+  tabs: Tab[];
 }
 
 export const state: State = {
   selectedTab: null,
   previousTab: null,
-  tabs: [] as TabInfo[],
+  playingTab: null,
+  tabs: [] as Tab[],
 };

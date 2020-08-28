@@ -2,7 +2,12 @@
   <div class="pinnedTab">
     <span class="pinnedTab__title">Pinned Tab</span>
     <div class="pinnedTab__content">
-      <div v-if="pinnedTab" class="pinnedTab__content__details" @click="jumpToTab">
+      <div
+        v-if="pinnedTab"
+        class="pinnedTab__content__details"
+        title="Go to pinned tab"
+        @click="jumpToTab"
+      >
         <img :src="pinnedTab.favIconUrl" alt="" class="pinnedTab__content__details__icon" />
         <span class="pinnedTab__content__details__text">
           {{ pinnedTab.title }}
@@ -24,17 +29,19 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { MessageType } from "@/types";
+import { MessageType, Tab } from "@/types";
 
 export default Vue.extend({
   computed: {
-    pinnedTab() {
+    pinnedTab(): Tab {
       return this.$store.getters.getSelectedTab;
     },
   },
   methods: {
     pinCurrentTab(): void {
-      browser.runtime.sendMessage({ type: MessageType.GET_CUR_TAB });
+      browser.runtime.sendMessage({ type: MessageType.GET_CUR_TAB }).then(result => {
+        if (result) window.alert(result);
+      });
     },
     jumpToTab(): void {
       const { id, windowId } = this.pinnedTab;

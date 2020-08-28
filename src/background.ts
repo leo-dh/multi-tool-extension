@@ -1,27 +1,56 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import store from "@/store";
-import { Message, MessageType, TabInfo } from "@/types";
+import { Message, MessageType, Tab } from "@/types";
 import { MutationTypes } from "./store/mutations";
 
 function refreshSelectedTab(): void {
-  const selectedTab: TabInfo = store.getters.getSelectedTab;
+  const selectedTab: Tab = store.getters.getSelectedTab;
   if (!selectedTab) return;
   const { id } = selectedTab;
-  browser.tabs.get(id).then(tab => {
-    const { windowId, favIconUrl, title, url } = tab;
-    const tabInfo = { id, windowId, favIconUrl, title, url } as TabInfo;
-    store.commit(MutationTypes.SET_SELECTED_TAB, tabInfo);
-  });
+  if (!id) return;
+  browser.tabs.get(id).then(
+    tab => {
+      store.commit(MutationTypes.SET_SELECTED_TAB, tab);
+    },
+    () => {
+      store.commit(MutationTypes.SET_SELECTED_TAB, null);
+    }
+  );
 }
 
 function refreshTabs(): void {
-  browser.tabs.query({}).then((result: browser.tabs.Tab[]) => {
-    const tabs = result.map(tab => {
-      const { id, windowId, favIconUrl, title, url } = tab;
-      return { id, windowId, favIconUrl, title, url } as TabInfo;
-    });
+  browser.tabs.query({}).then((tabs: Tab[]) => {
     store.commit(MutationTypes.SET_TABS, tabs);
   });
+}
+
+function refreshNowPlaying(): void {
+  const nowPlaying: Tab = store.getters.getPlayingTab;
+  if (!nowPlaying) {
+    browser.tabs.query({ audible: true, url: "*://*.youtube.com/*" }).then((tabs: Tab[]) => {
+      const [result] = tabs;
+      console.log(result);
+      if (!result) return;
+      if (!result.id || !result.windowId) return;
+      store.commit(MutationTypes.SET_PLAYING_TAB, result);
+    });
+    return;
+  }
+  browser.tabs.get(nowPlaying.id as number).then(
+    tab => {
+      if (!tab.audible) {
+        browser.tabs.query({ audible: true }).then((tabs: Tab[]) => {
+          const [result] = tabs;
+          if (!result) return;
+          store.commit(MutationTypes.SET_PLAYING_TAB, result);
+        });
+      } else {
+        store.commit(MutationTypes.SET_PLAYING_TAB, tab);
+      }
+    },
+    () => {
+      store.commit(MutationTypes.SET_PLAYING_TAB, null);
+    }
+  );
 }
 
 function focusTab(id: number, windowId: number): void {
@@ -34,26 +63,33 @@ browser.runtime.onMessage.addListener(async (message: Message, _sender) => {
     case MessageType.POPUP: {
       refreshSelectedTab();
       refreshTabs();
+      refreshNowPlaying();
       break;
     }
 
     case MessageType.GET_CUR_TAB: {
-      const [tab] = await browser.tabs.query({ active: true });
-      const { id, windowId, favIconUrl, title, url } = tab;
-      const tabInfo = { id, windowId, favIconUrl, title, url } as TabInfo;
-      store.commit(MutationTypes.SET_SELECTED_TAB, tabInfo);
+      const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+      if (!tab) return;
+      if (!tab.id || !tab.windowId) {
+        return new Promise((resolve, _) => {
+          resolve("Unable to pin tab due to it's nature");
+        });
+      }
+      store.commit(MutationTypes.SET_SELECTED_TAB, tab);
       break;
     }
 
     case MessageType.JUMP_TAB: {
-      const tabInfo: TabInfo = store.getters.getSelectedTab;
-      if (!tabInfo) return;
+      const selectedTab: Tab = store.getters.getSelectedTab;
+      if (!selectedTab) return;
       const [currentTab] = await browser.tabs.query({ active: true });
-      if (currentTab.id !== tabInfo.id) {
+      if (currentTab.id !== selectedTab.id) {
+        if (!selectedTab.id || !selectedTab.windowId) return;
         store.commit(MutationTypes.SET_PREVIOUS_TAB, currentTab);
-        focusTab(tabInfo.id, tabInfo.windowId);
+        focusTab(selectedTab.id, selectedTab.windowId);
       } else {
-        const prevTab: TabInfo = store.getters.getPreviousTab;
+        const prevTab: Tab = store.getters.getPreviousTab;
+        if (!prevTab.id || !prevTab.windowId) return;
         focusTab(prevTab.id, prevTab.windowId);
       }
       break;

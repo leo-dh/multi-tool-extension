@@ -45,7 +45,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { TabInfo } from "@/types";
+import { Tab } from "@/types";
 import Fuse from "fuse.js";
 
 export default Vue.extend({
@@ -56,10 +56,10 @@ export default Vue.extend({
     };
   },
   computed: {
-    tabs(): TabInfo[] {
+    tabs(): Tab[] {
       return this.$store.getters.getTabs;
     },
-    filteredTabs(): TabInfo[] {
+    filteredTabs(): Tab[] {
       if (!this.search) return this.tabs;
       const fuse = new Fuse(this.tabs, {
         keys: [{ name: "title", weight: 1.5 }, "url"],
@@ -78,9 +78,9 @@ export default Vue.extend({
     (this.$refs.searchInput as HTMLElement).focus();
   },
   methods: {
-    jumpToTab({ id, windowId }: TabInfo) {
-      browser.windows.update(windowId, { focused: true });
-      browser.tabs.update(id, { active: true });
+    jumpToTab({ id, windowId }: Tab) {
+      browser.windows.update(windowId as number, { focused: true });
+      browser.tabs.update(id as number, { active: true });
       window.close();
     },
     jumpToSelected() {
@@ -135,7 +135,7 @@ export default Vue.extend({
 }
 .tabs__search__results {
   /* border-top: 1px solid gray; */
-  max-height: 300px;
+  max-height: 250px;
   overflow-y: auto;
   margin-top: 16px;
 }
