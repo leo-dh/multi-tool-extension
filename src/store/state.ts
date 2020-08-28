@@ -5,6 +5,7 @@ export interface State {
   previousTab: Tab | null;
   playingTab: Tab | null;
   tabs: Tab[];
+  videoPlaying: boolean | null;
 }
 
 export const state: State = {
@@ -12,4 +13,5 @@ export const state: State = {
   previousTab: null,
   playingTab: null,
   tabs: [] as Tab[],
+  videoPlaying: null,
 };

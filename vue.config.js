@@ -20,6 +20,7 @@ module.exports = {
         contentScripts: {
           entries: {
             "content-script": ["src/content-scripts/content-script.ts"],
+            "youtube-content-script": ["src/content-scripts/youtube-content-script.ts"],
           },
         },
       },

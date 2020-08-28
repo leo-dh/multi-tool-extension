@@ -1,42 +1,37 @@
 <template>
-  <div class="nowPlaying">
+  <div v-if="tab" class="nowPlaying">
     <span class="nowPlaying__title">Now Playing</span>
     <div class="nowPlaying__content">
-      <template v-if="tab">
-        <div class="nowPlaying__content__details" @click="jumpToTab">
-          <img :src="tab.favIconUrl" alt="" class="nowPlaying__content__details__img" />
-          <span class="nowPlaying__content__details__text">{{ tab.title }}</span>
+      <div class="nowPlaying__content__details" @click="jumpToTab">
+        <img :src="tab.favIconUrl" alt="" class="nowPlaying__content__details__img" />
+        <span class="nowPlaying__content__details__text">{{ tab.title }}</span>
+      </div>
+      <div class="nowPlaying__content__buttons">
+        <div v-if="!videoPlaying" class="nowPlaying__content__buttons__icon" @click="playPause">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
         </div>
-        <div class="nowPlaying__content__buttons">
-          <div v-if="!tab.audible" class="nowPlaying__content__buttons__icon">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-          </div>
-          <div v-else class="nowPlaying__content__buttons__icon">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect x="6" y="4" width="4" height="16" />
-              <rect x="14" y="4" width="4" height="16" />
-            </svg>
-          </div>
+        <div v-else class="nowPlaying__content__buttons__icon" @click="playPause">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
         </div>
-      </template>
-      <div v-else>
-        Nothing Playing
       </div>
     </div>
   </div>
@@ -44,12 +39,15 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { Tab } from "@/types";
+import { Tab, Message, MessageType } from "@/types";
 
 export default Vue.extend({
   computed: {
     tab(): Tab {
       return this.$store.getters.getPlayingTab;
+    },
+    videoPlaying(): boolean {
+      return this.$store.getters.getVideoPlaying;
     },
   },
   methods: {
@@ -58,6 +56,9 @@ export default Vue.extend({
       browser.windows.update(windowId as number, { focused: true });
       browser.tabs.update(id as number, { active: true });
       window.close();
+    },
+    playPause() {
+      browser.tabs.sendMessage(this.tab.id as number, { type: MessageType.PLAY_PAUSE } as Message);
     },
   },
 });

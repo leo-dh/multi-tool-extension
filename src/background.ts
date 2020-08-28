@@ -25,27 +25,10 @@ function refreshTabs(): void {
 
 function refreshNowPlaying(): void {
   const nowPlaying: Tab = store.getters.getPlayingTab;
-  if (!nowPlaying) {
-    browser.tabs.query({ audible: true, url: "*://*.youtube.com/*" }).then((tabs: Tab[]) => {
-      const [result] = tabs;
-      console.log(result);
-      if (!result) return;
-      if (!result.id || !result.windowId) return;
-      store.commit(MutationTypes.SET_PLAYING_TAB, result);
-    });
-    return;
-  }
+  if (!nowPlaying) return;
   browser.tabs.get(nowPlaying.id as number).then(
     tab => {
-      if (!tab.audible) {
-        browser.tabs.query({ audible: true }).then((tabs: Tab[]) => {
-          const [result] = tabs;
-          if (!result) return;
-          store.commit(MutationTypes.SET_PLAYING_TAB, result);
-        });
-      } else {
-        store.commit(MutationTypes.SET_PLAYING_TAB, tab);
-      }
+      store.commit(MutationTypes.SET_PLAYING_TAB, tab);
     },
     () => {
       store.commit(MutationTypes.SET_PLAYING_TAB, null);
@@ -58,7 +41,7 @@ function focusTab(id: number, windowId: number): void {
   browser.tabs.update(id, { active: true });
 }
 
-browser.runtime.onMessage.addListener(async (message: Message, _sender) => {
+browser.runtime.onMessage.addListener(async (message: Message, sender) => {
   switch (message.type) {
     case MessageType.POPUP: {
       refreshSelectedTab();
@@ -92,6 +75,16 @@ browser.runtime.onMessage.addListener(async (message: Message, _sender) => {
         if (!prevTab.id || !prevTab.windowId) return;
         focusTab(prevTab.id, prevTab.windowId);
       }
+      break;
+    }
+
+    case MessageType.SET_VIDEO_STATUS: {
+      if (!sender.tab?.id) return;
+      const status = message.text === "play" ? true : false;
+      browser.tabs.get(sender.tab.id).then(tab => {
+        store.commit(MutationTypes.SET_PLAYING_TAB, tab);
+        store.commit(MutationTypes.SET_VIDEO_PLAYING, status);
+      });
       break;
     }
   }

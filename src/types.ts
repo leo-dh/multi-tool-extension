@@ -4,6 +4,8 @@ export enum MessageType {
   JUMP_TAB,
   GET_ALL_TABS,
   PLAY_PAUSE,
+  CHECK_VIDEO_STATUS,
+  SET_VIDEO_STATUS,
 }
 
 export interface Message {

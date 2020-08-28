@@ -7,6 +7,7 @@ export enum MutationTypes {
   SET_PREVIOUS_TAB = "SET_PREVIOUS_TAB",
   SET_TABS = "SET_TABS",
   SET_PLAYING_TAB = "SET_PLAYING_TAB",
+  SET_VIDEO_PLAYING = "SET_VIDEO_PLAYING",
 }
 
 export type Mutations<S = State> = {
@@ -14,6 +15,7 @@ export type Mutations<S = State> = {
   [MutationTypes.SET_PREVIOUS_TAB](state: S, tab: Tab): void;
   [MutationTypes.SET_TABS](state: S, tabs: Tab[]): void;
   [MutationTypes.SET_PLAYING_TAB](state: S, tab: Tab | null): void;
+  [MutationTypes.SET_VIDEO_PLAYING](state: S, status: boolean): void;
 };
 
 export const mutations: MutationTree<State> & Mutations = {
@@ -28,5 +30,8 @@ export const mutations: MutationTree<State> & Mutations = {
   },
   [MutationTypes.SET_PLAYING_TAB](state, tab: Tab | null) {
     state.playingTab = tab;
+  },
+  [MutationTypes.SET_VIDEO_PLAYING](state, status: boolean) {
+    state.videoPlaying = status;
   },
 };
