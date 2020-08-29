@@ -1,21 +1,61 @@
-import { MessageType } from "@/types";
+import { MessageType, Message } from "@/types";
 
-let debounce: Promise<any> | number | undefined;
-
-const video = document.querySelector("video");
+let timer: number | undefined;
+let debounce: number | undefined;
+let video = document.querySelector("video");
 const debounceWrapper = (fn: () => void, delay: number) => {
   if (!debounce) clearTimeout(debounce);
   debounce = setTimeout(fn, delay);
 };
-const pauseFn = () => {
+const pauseCallback = () => {
   debounceWrapper(() => {
     browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "pause" });
-  }, 500);
+  }, 300);
 };
-const playFn = () => {
+const playCallback = () => {
   debounceWrapper(() => {
     browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "play" });
-  }, 500);
+  }, 300);
 };
-video?.addEventListener("pause", pauseFn);
-video?.addEventListener("play", playFn);
+const setupVideoElement = (video: HTMLVideoElement) => {
+  video.addEventListener("pause", pauseCallback);
+  video.addEventListener("play", playCallback);
+  const status = video.paused ? "play" : "pause";
+  browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: status });
+};
+if (!video) {
+  timer = setInterval(() => {
+    video = document.querySelector("video");
+    if (video) {
+      setupVideoElement(video);
+      clearInterval(timer);
+    }
+  }, 1000);
+} else {
+  setupVideoElement(video);
+}
+const messageCallback = (message: Message, sender: browser.runtime.MessageSender) => {
+  if (message.type === MessageType.PLAY_PAUSE) {
+    if (video?.paused) {
+      video.play();
+    } else {
+      video?.pause();
+    }
+  } else if (message.type === MessageType.CHECK_VIDEO_STATUS) {
+    if (video?.paused) {
+      browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "pause" });
+      return new Promise((resolve, _) => resolve(true));
+    } else {
+      browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "play" });
+      return new Promise((resolve, _) => resolve(true));
+    }
+  }
+};
+
+browser.runtime.onMessage.addListener(messageCallback);
+
+window.onunload = () => {
+  video?.removeEventListener("pause", pauseCallback);
+  video?.removeEventListener("play", playCallback);
+  browser.runtime.onMessage.removeListener(messageCallback);
+};

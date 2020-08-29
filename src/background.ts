@@ -28,7 +28,13 @@ function refreshNowPlaying(): void {
   if (!nowPlaying) return;
   browser.tabs.get(nowPlaying.id as number).then(
     tab => {
-      store.commit(MutationTypes.SET_PLAYING_TAB, tab);
+      browser.tabs
+        .sendMessage(tab.id as number, { type: MessageType.CHECK_VIDEO_STATUS } as Message)
+        .then(result => {
+          // Tab is still on youtube
+          if (result) store.commit(MutationTypes.SET_PLAYING_TAB, tab);
+          else store.commit(MutationTypes.SET_PLAYING_TAB, null);
+        });
     },
     () => {
       store.commit(MutationTypes.SET_PLAYING_TAB, null);
