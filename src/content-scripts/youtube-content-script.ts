@@ -30,11 +30,11 @@ if (!video) {
       setupVideoElement(video);
       clearInterval(timer);
     }
-  }, 1000);
+  }, 5000);
 } else {
   setupVideoElement(video);
 }
-const messageCallback = (message: Message, sender: browser.runtime.MessageSender) => {
+const messageCallback = (message: Message, _sender: browser.runtime.MessageSender) => {
   if (message.type === MessageType.PLAY_PAUSE) {
     if (video?.paused) {
       video.play();

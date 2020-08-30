@@ -47,6 +47,20 @@ function focusTab(id: number, windowId: number): void {
   browser.tabs.update(id, { active: true });
 }
 
+async function goToTab(targetTab: Tab) {
+  if (!targetTab) return;
+  const [currentTab] = await browser.tabs.query({ active: true });
+  if (currentTab.id !== targetTab.id) {
+    if (!targetTab.id || !targetTab.windowId) return;
+    store.commit(MutationTypes.SET_PREVIOUS_TAB, currentTab);
+    focusTab(targetTab.id, targetTab.windowId);
+  } else {
+    const prevTab: Tab = store.getters.getPreviousTab;
+    if (!prevTab.id || !prevTab.windowId) return;
+    focusTab(prevTab.id, prevTab.windowId);
+  }
+}
+
 browser.runtime.onMessage.addListener(async (message: Message, sender) => {
   switch (message.type) {
     case MessageType.POPUP: {
@@ -68,19 +82,15 @@ browser.runtime.onMessage.addListener(async (message: Message, sender) => {
       break;
     }
 
-    case MessageType.JUMP_TAB: {
+    case MessageType.GO_TO_PIN_TAB: {
       const selectedTab: Tab = store.getters.getSelectedTab;
-      if (!selectedTab) return;
-      const [currentTab] = await browser.tabs.query({ active: true });
-      if (currentTab.id !== selectedTab.id) {
-        if (!selectedTab.id || !selectedTab.windowId) return;
-        store.commit(MutationTypes.SET_PREVIOUS_TAB, currentTab);
-        focusTab(selectedTab.id, selectedTab.windowId);
-      } else {
-        const prevTab: Tab = store.getters.getPreviousTab;
-        if (!prevTab.id || !prevTab.windowId) return;
-        focusTab(prevTab.id, prevTab.windowId);
-      }
+      await goToTab(selectedTab);
+      break;
+    }
+
+    case MessageType.GO_TO_PLAYING_TAB: {
+      const playingTab: Tab = store.getters.getPlayingTab;
+      await goToTab(playingTab);
       break;
     }
 

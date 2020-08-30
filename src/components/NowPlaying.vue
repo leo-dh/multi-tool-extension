@@ -16,7 +16,7 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <polygon points="5 3 19 12 5 21 5 3" />
+            <polygon points="5 3 19 12 5 21 5 3" style="transform: translateX(2px)" />
           </svg>
         </div>
         <div v-else class="nowPlaying__content__buttons__icon" @click="playPause">
@@ -77,7 +77,7 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-direction: column;
+  flex-direction: row;
   margin-top: 8px;
 }
 .nowPlaying__content__buttons {
@@ -85,9 +85,21 @@ export default Vue.extend({
   justify-content: center;
 }
 .nowPlaying__content__buttons__icon {
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-left: 8px;
+  border-radius: 50%;
+  border: solid 2px #4d4d5c;
+  display: flex;
+  align-items: center;
+}
+.nowPlaying__content__buttons__icon:hover {
+  background: #4d4d5c;
+}
+.nowPlaying__content__buttons__icon svg {
   width: 16px;
   height: 16px;
-  cursor: pointer;
 }
 .nowPlaying__content__details {
   display: flex;

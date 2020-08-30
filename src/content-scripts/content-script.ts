@@ -2,7 +2,8 @@ import { MessageType } from "@/types";
 
 const keyListener = (e: KeyboardEvent) => {
   if (e.ctrlKey && e.key === "\\") {
-    browser.runtime.sendMessage({ type: MessageType.JUMP_TAB });
+    if (e.shiftKey) browser.runtime.sendMessage({ type: MessageType.GO_TO_PIN_TAB });
+    else browser.runtime.sendMessage({ type: MessageType.GO_TO_PLAYING_TAB });
   }
 };
 document.addEventListener("keydown", keyListener);
