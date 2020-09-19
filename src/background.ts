@@ -141,9 +141,16 @@ const setContextMenu = async () => {
         }).then(response => {
           // TODO show toast on document
           if (response.status === 200) {
-            console.log("Success");
+            if (!tab.id) return;
+            browser.tabs.sendMessage(tab.id, {
+              type: MessageType.TOAST_SUCCESS,
+              text: page.title,
+            } as Message);
           } else {
-            console.log("Failed");
+            if (!tab.id) return;
+            browser.tabs.sendMessage(tab.id, {
+              type: MessageType.TOAST_FAILURE,
+            } as Message);
           }
         });
       },

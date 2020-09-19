@@ -44,10 +44,10 @@ const messageCallback = (message: Message, _sender: browser.runtime.MessageSende
   } else if (message.type === MessageType.CHECK_VIDEO_STATUS) {
     if (video?.paused) {
       browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "pause" });
-      return new Promise((resolve, _) => resolve(true));
+      return new Promise(resolve => resolve(true));
     } else {
       browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "play" });
-      return new Promise((resolve, _) => resolve(true));
+      return new Promise(resolve => resolve(true));
     }
   }
 };

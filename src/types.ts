@@ -6,6 +6,8 @@ export enum MessageType {
   PLAY_PAUSE,
   CHECK_VIDEO_STATUS,
   SET_VIDEO_STATUS,
+  TOAST_SUCCESS,
+  TOAST_FAILURE,
 }
 
 export interface Message {
