@@ -1,5 +1,6 @@
 import store from "@/store";
-import { Message, MessageType, Tab } from "@/types";
+import Notion from "notion-api-js";
+import { Message, MessageType, Page, Tab } from "@/types";
 import { MutationTypes } from "./store/mutations";
 
 function refreshSelectedTab(): void {
@@ -105,3 +106,49 @@ browser.runtime.onMessage.addListener(async (message: Message, sender) => {
     }
   }
 });
+
+enum ContextMenu {
+  ADD_TO_NOTION = "ADD_TO_NOTION",
+}
+
+const getNotionDetails = async () => {
+  const token: string = (await browser.storage.local.get("notionv2token")).notionv2token;
+};
+
+const setContextMenu = async () => {
+  await browser.contextMenus.removeAll();
+  browser.contextMenus.create({
+    id: ContextMenu.ADD_TO_NOTION,
+    title: "Add to Notion",
+    contexts: ["selection"],
+  });
+  const notionpages: string = (await browser.storage.local.get("notionpages")).notionpages;
+  const pages: Page[] = JSON.parse(notionpages);
+  pages.forEach(page => {
+    browser.contextMenus.create({
+      id: page.url,
+      title: page.title.length > 0 ? page.title : page.url,
+      parentId: ContextMenu.ADD_TO_NOTION,
+      contexts: ["selection"],
+      onclick: (info, tab) => {
+        fetch("http://localhost:9998/notion", {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: page.url, content: info.selectionText }),
+        }).then(response => {
+          // TODO show toast on document
+          if (response.status === 200) {
+            console.log("Success");
+          } else {
+            console.log("Failed");
+          }
+        });
+      },
+    });
+  });
+};
+setContextMenu();
+browser.storage.onChanged.addListener(setContextMenu);

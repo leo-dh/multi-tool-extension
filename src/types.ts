@@ -13,4 +13,9 @@ export interface Message {
   text?: string;
 }
 
+export interface Page {
+  url: string;
+  title: string;
+}
+
 export type Tab = browser.tabs.Tab;

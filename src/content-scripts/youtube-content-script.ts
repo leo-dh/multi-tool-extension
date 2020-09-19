@@ -58,4 +58,5 @@ window.onunload = () => {
   video?.removeEventListener("pause", pauseCallback);
   video?.removeEventListener("play", playCallback);
   browser.runtime.onMessage.removeListener(messageCallback);
+  clearInterval(timer);
 };
