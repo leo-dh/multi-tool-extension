@@ -1,5 +1,4 @@
 import store from "@/store";
-import Notion from "notion-api-js";
 import { Message, MessageType, Page, Tab } from "@/types";
 import { MutationTypes } from "./store/mutations";
 
