@@ -138,7 +138,6 @@ const setContextMenu = async () => {
           },
           body: JSON.stringify({ url: page.url, content: info.selectionText }),
         }).then(response => {
-          // TODO show toast on document
           if (response.status === 200) {
             if (!tab.id) return;
             browser.tabs.sendMessage(tab.id, {
