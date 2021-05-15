@@ -2,7 +2,7 @@ import { Message, MessageType } from "@/types";
 
 const keyListener = (e: KeyboardEvent) => {
   if (e.ctrlKey && e.key === "\\") {
-    if (e.shiftKey) browser.runtime.sendMessage({ type: MessageType.GO_TO_PIN_TAB });
+    if (e.shiftKey) browser.runtime.sendMessage({ type: MessageType.GO_TO_PINNED_TAB });
     else browser.runtime.sendMessage({ type: MessageType.GO_TO_PLAYING_TAB });
   }
 };
@@ -28,7 +28,7 @@ const displayToast = (displayText: string) => {
   setTimeout(() => {
     toastElement.style.opacity = "1";
   }, 100);
-  new Promise((resolve, _) => {
+  new Promise<void>((resolve, _) => {
     setTimeout(() => {
       toastElement.style.opacity = "0";
       resolve();

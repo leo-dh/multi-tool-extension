@@ -7,13 +7,13 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from "vue";
 import { MessageType } from "@/types";
 import PinnedTab from "@/components/PinnedTab.vue";
 import NowPlaying from "@/components/NowPlaying.vue";
 import Tabs from "@/components/Tabs.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "App",
   components: {
     PinnedTab,

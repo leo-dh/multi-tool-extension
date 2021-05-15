@@ -1,10 +1,7 @@
-import Vue from "vue";
+import { createApp } from "vue";
+import store, { key } from "@/store";
 import App from "./App.vue";
-import store from "../store/index";
 
-/* eslint-disable no-new */
-new Vue({
-  el: "#app",
-  store,
-  render: h => h(App),
-});
+createApp(App)
+  .use(store, key)
+  .mount("#app");

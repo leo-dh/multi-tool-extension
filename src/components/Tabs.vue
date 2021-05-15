@@ -24,9 +24,8 @@
         />
       </div>
       <div v-if="filteredTabs" ref="results" class="tabs__search__results">
-        <template v-for="(tab, i) in filteredTabs">
+        <template v-for="(tab, i) in filteredTabs" :key="i">
           <div
-            :key="i"
             class="tabs__search__results__item"
             :class="i == selected ? 'selected' : ''"
             @click="jumpToTab(tab)"
@@ -44,63 +43,79 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { Tab } from "@/types";
+import { computed, defineComponent, nextTick, onMounted, ref, watch } from "vue";
+import { MessageType, Tab } from "@/types";
 import Fuse from "fuse.js";
 
-export default Vue.extend({
-  data() {
-    return {
-      search: "",
-      selected: 0,
-    };
-  },
-  computed: {
-    tabs(): Tab[] {
-      return this.$store.getters.getTabs;
-    },
-    filteredTabs(): Tab[] {
-      if (!this.search) return this.tabs;
-      const fuse = new Fuse(this.tabs, {
+export default defineComponent({
+  setup() {
+    const search = ref("");
+    const selected = ref(0);
+    const results = ref<HTMLDivElement | null>(null);
+    const searchInput = ref<HTMLInputElement | null>(null);
+
+    const tabs = ref<Tab[] | null>(null);
+    browser.runtime.sendMessage({ type: MessageType.GET_TABS }).then(res => {
+      tabs.value = res;
+    });
+    const filteredTabs = computed(() => {
+      if (!search.value || !tabs.value) return tabs.value;
+      const fuse = new Fuse(tabs.value, {
         keys: [{ name: "title", weight: 1.5 }, "url"],
         threshold: 0.5,
       });
-      return fuse.search(this.search).map(result => result.item);
-    },
-  },
-  watch: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    search(newValue, oldValue) {
-      this.selected = 0;
-    },
-  },
-  mounted() {
-    (this.$refs.searchInput as HTMLElement).focus();
-  },
-  methods: {
-    jumpToTab({ id, windowId }: Tab) {
+      console.log(fuse.search(search.value).map(result => result.item));
+      return fuse.search(search.value).map(result => result.item);
+    });
+
+    watch(
+      () => search.value,
+      () => {
+        selected.value = 0;
+      }
+    );
+
+    function jumpToTab({ id, windowId }: Tab) {
       browser.windows.update(windowId as number, { focused: true });
       browser.tabs.update(id as number, { active: true });
       window.close();
-    },
-    jumpToSelected() {
-      const selectedTab = this.filteredTabs[this.selected];
+    }
+    function jumpToSelected() {
+      if (!filteredTabs.value) return;
+      const selectedTab = filteredTabs.value[selected.value];
       if (!selectedTab) return;
-      this.jumpToTab(selectedTab);
-    },
-    changeSelected(amount: number) {
-      const max = this.filteredTabs.length - 1;
+      jumpToTab(selectedTab);
+    }
+    function changeSelected(amount: number) {
+      if (!filteredTabs.value) return;
+      const max = filteredTabs.value.length - 1;
       const min = 0;
-      const newVal = this.selected + amount;
+      const newVal = selected.value + amount;
       if (!(newVal > max || newVal < min)) {
-        this.selected = newVal;
+        selected.value = newVal;
       }
-      this.$nextTick(() => {
-        (this.$refs["results"] as HTMLElement)
+      nextTick(() => {
+        (results.value as HTMLDivElement)
           .querySelector(".selected")
           ?.scrollIntoView({ block: amount > 0 ? "end" : "start", behavior: "smooth" });
       });
-    },
+    }
+
+    onMounted(() => {
+      searchInput.value?.focus();
+    });
+
+    return {
+      search,
+      selected,
+      results,
+      searchInput,
+      tabs,
+      filteredTabs,
+      jumpToTab,
+      jumpToSelected,
+      changeSelected,
+    };
   },
 });
 </script>

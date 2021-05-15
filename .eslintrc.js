@@ -5,8 +5,8 @@ module.exports = {
     webextensions: true,
   },
   extends: [
-    "plugin:vue/recommended",
-    "eslint:recommended",
+    "plugin:vue/vue3-recommended",
+    "@vue/airbnb",
     "@vue/typescript/recommended",
     "@vue/prettier",
     "@vue/prettier/@typescript-eslint",
@@ -17,5 +17,7 @@ module.exports = {
   rules: {
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
+    "no-unused-expressions": "off",
+    "no-param-reassign": "off",
   },
 };

@@ -1,6 +1,5 @@
-import { MutationTree } from "vuex";
-import { State } from "./state";
 import { Tab } from "@/types";
+import { State } from "./state";
 
 export enum MutationTypes {
   SET_SELECTED_TAB = "SET_SELECTED_TAB",
@@ -10,28 +9,20 @@ export enum MutationTypes {
   SET_VIDEO_PLAYING = "SET_VIDEO_PLAYING",
 }
 
-export type Mutations<S = State> = {
-  [MutationTypes.SET_SELECTED_TAB](state: S, tab: Tab | null): void;
-  [MutationTypes.SET_PREVIOUS_TAB](state: S, tab: Tab): void;
-  [MutationTypes.SET_TABS](state: S, tabs: Tab[]): void;
-  [MutationTypes.SET_PLAYING_TAB](state: S, tab: Tab | null): void;
-  [MutationTypes.SET_VIDEO_PLAYING](state: S, status: boolean): void;
-};
-
-export const mutations: MutationTree<State> & Mutations = {
-  [MutationTypes.SET_SELECTED_TAB](state, tab: Tab | null) {
+export const mutations = {
+  [MutationTypes.SET_SELECTED_TAB](state: State, tab: Tab | null) {
     state.selectedTab = tab;
   },
-  [MutationTypes.SET_PREVIOUS_TAB](state, tab: Tab) {
+  [MutationTypes.SET_PREVIOUS_TAB](state: State, tab: Tab) {
     state.previousTab = tab;
   },
-  [MutationTypes.SET_TABS](state, tabs: Tab[]) {
+  [MutationTypes.SET_TABS](state: State, tabs: Tab[]) {
     state.tabs = tabs;
   },
-  [MutationTypes.SET_PLAYING_TAB](state, tab: Tab | null) {
+  [MutationTypes.SET_PLAYING_TAB](state: State, tab: Tab | null) {
     state.playingTab = tab;
   },
-  [MutationTypes.SET_VIDEO_PLAYING](state, status: boolean) {
+  [MutationTypes.SET_VIDEO_PLAYING](state: State, status: boolean) {
     state.videoPlaying = status;
   },
 };

@@ -26,8 +26,8 @@
         <th width="70%">Url</th>
         <th width="10%" style="text-align:center">Delete</th>
       </tr>
-      <template v-for="(page, i) in notionPages">
-        <tr :key="i">
+      <template v-for="(page, i) in notionPages" :key="i">
+        <tr>
           <td>{{ page.title }}</td>
           <td>{{ page.url }}</td>
           <td>
@@ -53,10 +53,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { Page } from "@/types.ts";
+import { defineComponent } from "vue";
+import { Page } from "@/types";
 
-export default Vue.extend({
+export default defineComponent({
   name: "App",
   data() {
     return {

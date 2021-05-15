@@ -13,5 +13,5 @@ export const state: State = {
   previousTab: null,
   playingTab: null,
   tabs: [] as Tab[],
-  videoPlaying: null,
+  videoPlaying: true,
 };

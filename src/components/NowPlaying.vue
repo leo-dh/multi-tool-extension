@@ -38,28 +38,37 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent, ref } from "vue";
 import { Tab, Message, MessageType } from "@/types";
 
-export default Vue.extend({
-  computed: {
-    tab(): Tab {
-      return this.$store.getters.getPlayingTab;
-    },
-    videoPlaying(): boolean {
-      return this.$store.getters.getVideoPlaying;
-    },
-  },
-  methods: {
-    jumpToTab() {
-      const { id, windowId } = this.tab;
+export default defineComponent({
+  setup() {
+    const tab = ref<Tab | null>(null);
+    const videoPlaying = ref(false);
+
+    browser.runtime.sendMessage({ type: MessageType.GET_NOW_PLAYING }).then(res => {
+      tab.value = res.tab;
+      videoPlaying.value = res.videoPlaying;
+    });
+
+    function jumpToTab() {
+      if (!tab.value) return;
+      const { id, windowId } = tab.value;
       browser.windows.update(windowId as number, { focused: true });
       browser.tabs.update(id as number, { active: true });
       window.close();
-    },
-    playPause() {
-      browser.tabs.sendMessage(this.tab.id as number, { type: MessageType.PLAY_PAUSE } as Message);
-    },
+    }
+
+    function playPause() {
+      if (!tab.value) return;
+      browser.tabs.sendMessage(tab.value.id as number, { type: MessageType.PLAY_PAUSE } as Message);
+    }
+    return {
+      tab,
+      videoPlaying,
+      jumpToTab,
+      playPause,
+    };
   },
 });
 </script>

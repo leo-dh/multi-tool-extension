@@ -28,27 +28,35 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent, ref } from "vue";
 import { MessageType, Tab } from "@/types";
 
-export default Vue.extend({
-  computed: {
-    pinnedTab(): Tab {
-      return this.$store.getters.getSelectedTab;
-    },
-  },
-  methods: {
-    pinCurrentTab(): void {
-      browser.runtime.sendMessage({ type: MessageType.GET_CUR_TAB }).then(result => {
-        if (result) window.alert(result);
+export default defineComponent({
+  setup() {
+    const pinnedTab = ref<Tab | null>(null);
+    browser.runtime.sendMessage({ type: MessageType.GET_PINNED_TAB }).then(res => {
+      pinnedTab.value = res;
+    });
+
+    function pinCurrentTab(): void {
+      browser.runtime.sendMessage({ type: MessageType.PIN_CUR_TAB }).then(res => {
+        pinnedTab.value = res;
       });
-    },
-    jumpToTab(): void {
-      const { id, windowId } = this.pinnedTab;
+    }
+
+    function jumpToTab(): void {
+      if (!pinnedTab.value) return;
+      const { id, windowId } = pinnedTab.value;
       browser.windows.update(windowId as number, { focused: true });
       browser.tabs.update(id as number, { active: true });
       window.close();
-    },
+    }
+
+    return {
+      pinnedTab,
+      pinCurrentTab,
+      jumpToTab,
+    };
   },
 });
 </script>
