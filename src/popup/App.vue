@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, onMounted } from "vue";
 import { MessageType } from "@/types";
 import PinnedTab from "@/components/PinnedTab.vue";
 import NowPlaying from "@/components/NowPlaying.vue";
@@ -20,16 +20,16 @@ export default defineComponent({
     Tabs,
     NowPlaying,
   },
-  created() {
+  setup() {
     browser.runtime.sendMessage({ type: MessageType.POPUP });
-  },
-  mounted() {
-    const body = document.querySelector("body");
-    if (body) {
-      body.style.background = "#31313a";
-      body.style.display = "flex";
-      body.style.justifyContent = "center";
-    }
+    onMounted(() => {
+      const body = document.querySelector("body");
+      if (body) {
+        body.style.background = "#31313a";
+        body.style.display = "flex";
+        body.style.justifyContent = "center";
+      }
+    });
   },
 });
 </script>

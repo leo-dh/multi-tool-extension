@@ -10,17 +10,17 @@ const debounceWrapper = (fn: () => void, delay: number) => {
 const pauseCallback = () => {
   debounceWrapper(() => {
     browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "pause" });
-  }, 300);
+  }, 200);
 };
 const playCallback = () => {
   debounceWrapper(() => {
     browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "play" });
-  }, 300);
+  }, 200);
 };
-const setupVideoElement = (video: HTMLVideoElement) => {
-  video.addEventListener("pause", pauseCallback);
-  video.addEventListener("play", playCallback);
-  const status = video.paused ? "play" : "pause";
+const setupVideoElement = (videoElement: HTMLVideoElement) => {
+  videoElement.addEventListener("pause", pauseCallback);
+  videoElement.addEventListener("play", playCallback);
+  const status = videoElement.paused ? "play" : "pause";
   browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: status });
 };
 if (!video) {
@@ -30,24 +30,31 @@ if (!video) {
       setupVideoElement(video);
       clearInterval(timer);
     }
-  }, 5000);
+  }, 3000);
 } else {
   setupVideoElement(video);
 }
 const messageCallback = (message: Message, _sender: browser.runtime.MessageSender) => {
-  if (message.type === MessageType.PLAY_PAUSE) {
-    if (video?.paused) {
-      video.play();
-    } else {
-      video?.pause();
+  switch (message.type) {
+    case MessageType.PLAY_PAUSE: {
+      if (!video) return false;
+      if (video.paused) {
+        video.play();
+        return Promise.resolve("play");
+      }
+      video.pause();
+      return Promise.resolve("pause");
     }
-  } else if (message.type === MessageType.CHECK_VIDEO_STATUS) {
-    if (video?.paused) {
-      browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "pause" });
-      return new Promise(resolve => resolve(true));
-    } else {
-      browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "play" });
-      return new Promise(resolve => resolve(true));
+    case MessageType.CHECK_VIDEO_STATUS: {
+      if (video?.paused) {
+        browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "pause" });
+      } else {
+        browser.runtime.sendMessage({ type: MessageType.SET_VIDEO_STATUS, text: "play" });
+      }
+      return Promise.resolve(true);
+    }
+    default: {
+      return false;
     }
   }
 };

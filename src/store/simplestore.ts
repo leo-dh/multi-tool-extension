@@ -13,6 +13,12 @@ export default function createStore<S, M extends Record<string | number, Functio
       return result;
     }, {} as Record<keyof T, Function>);
   }
+  // const mGetters = {};
+  // Object.entries(getters || {})?.forEach(([k, v]) => {
+  //   Object.defineProperty(mGetters, k, {
+  //     get: v.bind(null, state),
+  //   });
+  // });
 
   const store = {
     state,

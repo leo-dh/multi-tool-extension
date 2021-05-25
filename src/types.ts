@@ -1,6 +1,6 @@
 export enum MessageType {
   POPUP,
-  PIN_CUR_TAB,
+  SET_PINNED_TAB,
   GET_PINNED_TAB,
   GET_NOW_PLAYING,
   GET_TABS,
@@ -19,8 +19,13 @@ export interface Message {
 }
 
 export interface Page {
-  url: string;
+  uuid: string;
   title: string;
 }
 
 export type Tab = browser.tabs.Tab;
+
+export enum LocalStorageKeys {
+  NOTION_TOKEN = "notionapitoken",
+  NOTION_PAGES = "notionpages",
+}

@@ -39,7 +39,7 @@ export default defineComponent({
     });
 
     function pinCurrentTab(): void {
-      browser.runtime.sendMessage({ type: MessageType.PIN_CUR_TAB }).then(res => {
+      browser.runtime.sendMessage({ type: MessageType.SET_PINNED_TAB }).then(res => {
         pinnedTab.value = res;
       });
     }

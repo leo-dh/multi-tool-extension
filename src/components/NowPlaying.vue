@@ -39,7 +39,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { Tab, Message, MessageType } from "@/types";
+import { Tab, MessageType } from "@/types";
 
 export default defineComponent({
   setup() {
@@ -61,7 +61,11 @@ export default defineComponent({
 
     function playPause() {
       if (!tab.value) return;
-      browser.tabs.sendMessage(tab.value.id as number, { type: MessageType.PLAY_PAUSE } as Message);
+      browser.tabs
+        .sendMessage(tab.value.id as number, { type: MessageType.PLAY_PAUSE })
+        .then(res => {
+          if (res) videoPlaying.value = res === "play";
+        });
     }
     return {
       tab,

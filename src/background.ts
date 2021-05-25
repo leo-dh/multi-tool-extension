@@ -1,58 +1,38 @@
-import { Message, MessageType, Page, Tab } from "@/types";
-import createStore from "./simplestore";
-import { state, State } from "./store/state";
-import { MutationTypes, mutations } from "./store/mutations";
+import { Message, MessageType, Page, Tab, LocalStorageKeys } from "@/types";
+import { store } from "./store";
+import { MutationTypes } from "./store/mutations";
+import { addContentToPage } from "./notionapi";
 
-const store = createStore<State>({
-  state,
-  getters: {
-    getSelectedTab: s => s.selectedTab,
-    getPreviousTab: s => s.previousTab,
-    getTabs: s => s.tabs,
-    getPlayingTab: s => s.playingTab,
-    getVideoPlaying: s => s.videoPlaying,
-  },
-  mutations,
-});
-
-function refreshSelectedTab(): void {
+async function refreshSelectedTab(): Promise<void> {
   const selectedTab: Tab = store.getters.getSelectedTab();
   if (!selectedTab) return;
   const { id } = selectedTab;
   if (!id) return;
-  browser.tabs.get(id).then(
-    tab => {
-      store.commit(MutationTypes.SET_SELECTED_TAB, tab);
-    },
-    () => {
-      store.commit(MutationTypes.SET_SELECTED_TAB, null);
-    }
-  );
+  try {
+    const tab = await browser.tabs.get(id);
+    store.commit(MutationTypes.SET_SELECTED_TAB, tab);
+  } catch (_) {
+    store.commit(MutationTypes.SET_SELECTED_TAB, null);
+  }
 }
 
-function refreshTabs(): void {
-  browser.tabs.query({}).then((tabs: Tab[]) => {
-    store.commit(MutationTypes.SET_TABS, tabs);
-  });
+async function refreshTabs(): Promise<void> {
+  const tabs = await browser.tabs.query({});
+  store.commit(MutationTypes.SET_TABS, tabs);
 }
 
-function refreshNowPlaying(): void {
+async function refreshNowPlaying(): Promise<void> {
   const nowPlaying: Tab = store.getters.getPlayingTab();
   if (!nowPlaying) return;
-  browser.tabs.get(nowPlaying.id as number).then(
-    tab => {
-      browser.tabs
-        .sendMessage(tab.id as number, { type: MessageType.CHECK_VIDEO_STATUS } as Message)
-        .then(result => {
-          // Tab is still on youtube
-          if (result) store.commit(MutationTypes.SET_PLAYING_TAB, tab);
-          else store.commit(MutationTypes.SET_PLAYING_TAB, null);
-        });
-    },
-    () => {
-      store.commit(MutationTypes.SET_PLAYING_TAB, null);
-    }
-  );
+  try {
+    const tab = await browser.tabs.get(nowPlaying.id as number);
+    const response = await browser.tabs.sendMessage(tab.id as number, {
+      type: MessageType.CHECK_VIDEO_STATUS,
+    });
+    store.commit(MutationTypes.SET_PLAYING_TAB, response ? tab : null);
+  } catch (_) {
+    store.commit(MutationTypes.SET_PLAYING_TAB, null);
+  }
 }
 
 function focusTab(id: number, windowId: number): void {
@@ -75,65 +55,62 @@ async function goToTab(targetTab: Tab) {
 }
 
 // eslint-disable-next-line consistent-return
-browser.runtime.onMessage.addListener(async (message: Message, sender) => {
+browser.runtime.onMessage.addListener((message: Message, sender) => {
   switch (message.type) {
-    case MessageType.POPUP: {
-      refreshSelectedTab();
-      refreshTabs();
-      refreshNowPlaying();
-      break;
-    }
-
     case MessageType.GET_PINNED_TAB: {
-      return store.getters.getSelectedTab();
+      return refreshSelectedTab().then(() => {
+        return store.getters.getSelectedTab();
+      });
     }
 
-    case MessageType.PIN_CUR_TAB: {
-      console.log("PIN TAB message");
-      const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-      if (!tab) return null;
-      if (!tab.id || !tab.windowId) {
-        return null;
-      }
-      store.commit(MutationTypes.SET_SELECTED_TAB, tab);
-      return tab;
+    case MessageType.SET_PINNED_TAB: {
+      return browser.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+        if (!tab) return false;
+        if (!tab.id || !tab.windowId) return false;
+        store.commit(MutationTypes.SET_SELECTED_TAB, tab);
+        return tab;
+      });
     }
 
     case MessageType.GO_TO_PINNED_TAB: {
       const selectedTab: Tab = store.getters.getSelectedTab();
-      await goToTab(selectedTab);
-      break;
+      goToTab(selectedTab);
+      return false;
     }
 
     case MessageType.GET_NOW_PLAYING: {
-      return {
-        tab: store.getters.getPlayingTab(),
-        videoPlaying: store.getters.getVideoPlaying(),
-      };
+      return refreshNowPlaying().then(() => {
+        return {
+          tab: store.getters.getPlayingTab(),
+          videoPlaying: store.getters.getVideoPlaying(),
+        };
+      });
     }
 
     case MessageType.GET_TABS: {
-      return store.getters.getTabs();
+      return refreshTabs().then(() => {
+        return store.getters.getTabs();
+      });
     }
 
     case MessageType.GO_TO_PLAYING_TAB: {
       const playingTab: Tab = store.getters.getPlayingTab();
-      await goToTab(playingTab);
-      break;
+      goToTab(playingTab);
+      return false;
     }
 
     case MessageType.SET_VIDEO_STATUS: {
-      if (!sender.tab?.id) return {};
+      if (!sender.tab?.id) return false;
       const status = message.text === "play";
       browser.tabs.get(sender.tab.id).then(tab => {
         store.commit(MutationTypes.SET_PLAYING_TAB, tab);
         store.commit(MutationTypes.SET_VIDEO_PLAYING, status);
       });
-      break;
+      return false;
     }
 
     default: {
-      break;
+      return false;
     }
   }
 });
@@ -142,8 +119,11 @@ enum ContextMenu {
   ADD_TO_NOTION = "ADD_TO_NOTION",
 }
 
-const getNotionDetails = async () => {
-  const token: string = (await browser.storage.local.get("notionv2token")).notionv2token;
+const getNotionToken = async () => {
+  const token: string = (await browser.storage.local.get(LocalStorageKeys.NOTION_TOKEN))[
+    LocalStorageKeys.NOTION_TOKEN
+  ];
+  return token;
 };
 
 const setContextMenu = async () => {
@@ -157,32 +137,26 @@ const setContextMenu = async () => {
   const pages: Page[] = JSON.parse(notionpages);
   pages.forEach(page => {
     browser.contextMenus.create({
-      id: page.url,
-      title: page.title.length > 0 ? page.title : page.url,
+      id: page.uuid,
+      title: page.title.length > 0 ? page.title : page.uuid,
       parentId: ContextMenu.ADD_TO_NOTION,
       contexts: ["selection"],
-      onclick: (info, tab) => {
-        fetch("http://localhost:9998/notion", {
-          method: "POST",
-          mode: "cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url: page.url, content: info.selectionText }),
-        }).then(response => {
-          if (response.status === 200) {
-            if (!tab.id) return;
-            browser.tabs.sendMessage(tab.id, {
-              type: MessageType.TOAST_SUCCESS,
-              text: page.title,
-            } as Message);
-          } else {
-            if (!tab.id) return;
-            browser.tabs.sendMessage(tab.id, {
-              type: MessageType.TOAST_FAILURE,
-            } as Message);
-          }
-        });
+      onclick: async (info, tab) => {
+        if (!info.selectionText) return;
+        const token = await getNotionToken();
+        const response = await addContentToPage(info.selectionText, page.uuid, token);
+        if (response.status === 200) {
+          if (!tab.id) return;
+          browser.tabs.sendMessage(tab.id, {
+            type: MessageType.TOAST_SUCCESS,
+            text: page.title,
+          } as Message);
+        } else {
+          if (!tab.id) return;
+          browser.tabs.sendMessage(tab.id, {
+            type: MessageType.TOAST_FAILURE,
+          } as Message);
+        }
       },
     });
   });

@@ -1,21 +1,15 @@
 <template>
   <div class="main">
     <div class="tokenfield">
-      <label for="notionv2">Notion V2 Token</label>
-      <input id="notionv2" v-model="notionV2Token" type="text" />
+      <label for="notionapitoken">Notion API Token</label>
+      <input id="notionapitoken" v-model="notionApiToken" type="text" />
     </div>
     <div class="buttoncontainer">
       <button @click="saveToken">SAVE</button>
     </div>
-    <div class="notionpagefield">
-      <div class="formfield titlefield">
-        <label for="pagetitle">Notion Page Title</label>
-        <input id="pagetitle" v-model="notionPageTitle" type="text" placeholder="optional" />
-      </div>
-      <div class="formfield urlfield">
-        <label for="pageurl">Notion Page Url</label>
-        <input id="pageurl" v-model="notionPageUrl" type="text" placeholder="url" />
-      </div>
+    <div class="urlfield">
+      <label for="notionurl">Notion Pages</label>
+      <input id="notionurl" v-model="notionUrl" type="text" />
     </div>
     <div class="buttoncontainer">
       <button @click="savePage">ADD</button>
@@ -23,13 +17,13 @@
     <table>
       <tr class="tableheader">
         <th width="20%">Title</th>
-        <th width="70%">Url</th>
+        <th width="70%">UUID</th>
         <th width="10%" style="text-align:center">Delete</th>
       </tr>
       <template v-for="(page, i) in notionPages" :key="i">
         <tr>
           <td>{{ page.title }}</td>
-          <td>{{ page.url }}</td>
+          <td>{{ page.uuid }}</td>
           <td>
             <div>
               <button @click="removePage(i)">
@@ -53,31 +47,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { Page } from "@/types";
+import { defineComponent, ref } from "vue";
+import { Page, LocalStorageKeys } from "@/types";
 
 export default defineComponent({
   name: "App",
-  data() {
-    return {
-      notionV2Token: "",
-      notionPageUrl: "",
-      notionPageTitle: "",
-      notionPages: [] as Page[],
-    };
-  },
-  async mounted() {
-    this.notionV2Token = (await this.getLocalStorage("notionv2token")) ?? "";
-    const result = await this.getLocalStorage<string | null>("notionpages");
-    this.notionPages = result ? JSON.parse(result) : ([] as Page[]);
-  },
-  methods: {
-    setLocalStorage(key: string, value: any) {
+  setup() {
+    const notionApiToken = ref("");
+    const notionUrl = ref("");
+    const notionPages = ref<Page[]>([]);
+
+    async function setLocalStorage(key: string, value: string) {
       browser.storage.local.set({
         [key]: value,
       });
-    },
-    async getLocalStorage<T>(key: string): Promise<T | null> {
+    }
+    async function getLocalStorage<T>(key: LocalStorageKeys): Promise<T | null> {
       try {
         const result = (await browser.storage.local.get(key))[key];
         return result;
@@ -85,25 +70,49 @@ export default defineComponent({
         console.info(`Key ${key} cannot be found`);
         return null;
       }
-    },
-    saveToken() {
-      this.setLocalStorage("notionv2token", this.notionV2Token);
-    },
-    savePage() {
-      if (this.notionPageUrl.length > 0) {
-        this.notionPages.push({
-          title: this.notionPageTitle,
-          url: this.notionPageUrl,
+    }
+    async function saveToken(e: Event) {
+      await setLocalStorage(LocalStorageKeys.NOTION_TOKEN, notionApiToken.value);
+      (e.target as HTMLElement).innerHTML = "SAVED";
+      console.log("WHT");
+      setTimeout(() => {
+        (e.target as HTMLElement).innerHTML = "SAVE";
+      }, 1000);
+    }
+    function savePage() {
+      if (notionUrl.value) {
+        const parser = document.createElement("a");
+        parser.href = notionUrl.value;
+        const { pathname } = parser;
+        const [title, uuid] = pathname.replaceAll("/", "").split("-");
+        const uuidFormatted = uuid.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5");
+        notionPages.value.push({
+          title,
+          uuid: uuidFormatted,
         });
-        this.setLocalStorage("notionpages", JSON.stringify(this.notionPages));
-        this.notionPageUrl = "";
-        this.notionPageTitle = "";
+        setLocalStorage(LocalStorageKeys.NOTION_PAGES, JSON.stringify(notionPages.value));
+        notionUrl.value = "";
       }
-    },
-    removePage(index: number) {
-      this.notionPages.splice(index, 1);
-      this.setLocalStorage("notionpages", JSON.stringify(this.notionPages));
-    },
+    }
+    function removePage(index: number) {
+      notionPages.value.splice(index, 1);
+      setLocalStorage("notionpages", JSON.stringify(notionPages.value));
+    }
+
+    (async () => {
+      notionApiToken.value = (await getLocalStorage(LocalStorageKeys.NOTION_TOKEN)) ?? "";
+      const result = await getLocalStorage<string | null>(LocalStorageKeys.NOTION_PAGES);
+      notionPages.value = result ? JSON.parse(result) : [];
+    })();
+
+    return {
+      notionApiToken,
+      notionUrl,
+      notionPages,
+      savePage,
+      saveToken,
+      removePage,
+    };
   },
 });
 </script>
@@ -166,31 +175,17 @@ label {
   font-size: 0.9em;
 }
 
-.tokenfield {
+.tokenfield,
+.urlfield {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
-.tokenfield input {
-  margin-top: 8px;
-  width: 100%;
-}
-.notionpagefield {
-  display: flex;
+.urlfield {
   margin-top: 8px;
 }
-.notionpagefield .formfield {
-  display: flex;
-  flex-direction: column;
-}
-.notionpagefield .titlefield {
-  flex: 3;
-}
-.notionpagefield .urlfield {
-  flex: 5;
-  margin-left: 8px;
-}
-.notionpagefield .formfield input {
+.tokenfield input,
+.urlfield input {
   margin-top: 8px;
   width: 100%;
 }
