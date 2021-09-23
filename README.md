@@ -1,10 +1,15 @@
-# Media Tab Extension
+# Multi Tool Extension
 
-Simple browser extension to jump to a targeted tab through a button
-Search through tab titles and urls and jump to the desired tab
+> Browser extension to search through tabs and control media playback
+> from sites like youtube and soundcloud and other features stitched together.
+>
+> Other minor QOL features:
+>
+> - Clears cookies when visiting medium blogs
+> - Context menu to copy selected text to a notion page.
+>
+> Made using [antfu/vitesse-webext](https://github.com/antfu/vitesse-webext) template
 
-Use Ctrl+\ to jump to pinned tab
+![screenshot](./screenshots/main.png)
 
-![Screenshot](https://github.com/leo-dh/media-tab-plugin/blob/master/screenshot/2020-08-25-215411_1920x1080_scrot.png)
-
-Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
+Use `Ctrl+\` to cycle through all the pinned tabs
