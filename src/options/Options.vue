@@ -74,9 +74,12 @@
         </div>
         <div class="flex flex-col flex-1">
           <h2 class="font-semibold text-xl">Debug</h2>
-          <div class="mt-4">
+          <div class="mt-4 space-y-2">
             <button class="btn" @click="resetLocalStorage">
               Reset Local Storage
+            </button>
+            <button class="btn" @click="resetMediaPlayback">
+              Reset Media Playback
             </button>
           </div>
         </div>
@@ -116,5 +119,11 @@ const resetLocalStorage = () => {
   autoPause.value = false;
   savedTitles.value = [];
   notificationQueue.value = [];
+};
+
+const resetMediaPlayback = () => {
+  mediaQueue.value = [];
+  mediaQueueDetails.value = [];
+  numPlayingTabs.value = 0;
 };
 </script>

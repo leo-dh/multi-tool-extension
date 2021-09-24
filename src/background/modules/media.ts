@@ -77,6 +77,11 @@ export const registerMediaModule = () => {
   });
 
   onMessage("remove-from-queue", ({ sender }) => {
+    if (
+      mediaQueue.value.findIndex((id) => id === sender.tabId) <
+      numPlayingTabs.value
+    )
+      numPlayingTabs.value = numPlayingTabs.value - 1;
     mediaQueue.value = mediaQueue.value.filter((id) => id !== sender.tabId);
   });
 

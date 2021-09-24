@@ -1,7 +1,7 @@
 {
-  "name": "Multi-Tool Extension",
+  "name": "multi-tool-extension",
   "displayName": "Multi-Tool Extension",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Web extension to search through tabs and control youtube/soundcloud playback. Helps to clear cookies from medium blogs as well.",
   "private": true,
   "scripts": {

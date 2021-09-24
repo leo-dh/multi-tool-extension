@@ -94,6 +94,7 @@ export const initMediaModule = () => {
   });
   onMessage("check-media", () => {
     checkMedia();
+    return { status: checkStatus() };
   });
   onMessage("check-title", () => {
     return { title: checkTitle() };

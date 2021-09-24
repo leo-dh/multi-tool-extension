@@ -6,10 +6,7 @@ declare module "webext-bridge" {
     // define message protocol types
     // see https://github.com/antfu/webext-bridge#type-safe-protocols
     "medium-blog": { domain: string; url: string };
-    "check-media": ProtocolWithReturn<
-      {},
-      { status: MediaStatus; title: string }
-    >;
+    "check-media": ProtocolWithReturn<{}, { status: MediaStatus }>;
     "check-title": ProtocolWithReturn<{}, { title: string }>;
     "update-media": { status: MediaStatus; title: string };
     "update-notifications": { newNotifications: NotificationQueueDetails[] };
